@@ -51,6 +51,14 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
     }
 
     // @Override
+    public Uni<List<ServiceInstance>> __fetchNewServiceInstances(List<ServiceInstance> previousInstances) {
+        DiscoveryClient discoveryClient = Arc.container().instance(DiscoveryClientProvider.class).get().getClient();
+        long timeout = previousInstances.isEmpty() ? 10000L : 100L;
+        // how do I set the timeout??
+        return discoveryClient.discovery(config.getApp()).onItem().transform(this::map);
+    }
+
+    // @Override
 //    public Uni<List<ServiceInstance>> fetchNewServiceInstances(List<ServiceInstance> previousInstances) {
 //
 //        log.info("fetching new instances");
