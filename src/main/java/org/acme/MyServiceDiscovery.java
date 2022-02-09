@@ -20,13 +20,28 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
 
     @Override
     public Uni<List<ServiceInstance>> fetchNewServiceInstances(List<ServiceInstance> previousInstances) {
+
         log.info("fetching new instances");
+
         if (System.currentTimeMillis() % 2 == 0) {
-            throw new RuntimeException("oops registry not available");
+            log.info("returning a failure");
+            return Uni.createFrom().deferred(this::throwFailure);
         }
+
         return Uni.createFrom().item(Arrays.asList(
                 new DefaultServiceInstance(ServiceInstanceIds.next(), "localhost", 8080, false),
                 new DefaultServiceInstance(ServiceInstanceIds.next(), "localhost", 8080, false)
         ));
+    }
+
+    public Uni<List<ServiceInstance>> throwFailure() {
+        try {
+            log.info("starts waiting");
+            Thread.sleep(2000);
+            log.info("stops waiting");
+        } catch (InterruptedException e) {
+            log.error(e.toString());
+        }
+        throw new RuntimeException("oops registry not available");
     }
 }
