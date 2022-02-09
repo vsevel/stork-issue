@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.test;
 
 import io.smallrye.mutiny.Uni;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;

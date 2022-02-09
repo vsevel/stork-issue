@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.test;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;

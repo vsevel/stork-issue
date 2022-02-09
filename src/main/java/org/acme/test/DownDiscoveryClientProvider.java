@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.test;
 
 import io.quarkus.arc.Unremovable;
 import org.eclipse.microprofile.rest.client.inject.RestClient;

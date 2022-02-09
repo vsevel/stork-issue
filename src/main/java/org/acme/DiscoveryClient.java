@@ -16,5 +16,10 @@ public interface DiscoveryClient {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
+    Uni<String> discovery(@QueryParam("app") String app);
+
+    @Path("/test")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
     Uni<String> discovery(@QueryParam("delay") Long delay, @QueryParam("error") Boolean error, @QueryParam("addresses") String addresses) ;
 }

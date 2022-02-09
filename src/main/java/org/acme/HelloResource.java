@@ -1,5 +1,6 @@
 package org.acme;
 
+import org.acme.test.DiscoveryParams;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.inject.Inject;
@@ -10,7 +11,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 @Path("/hello")
-public class ReactiveGreetingResource {
+public class HelloResource {
 
     @Inject
     @RestClient
