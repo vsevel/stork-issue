@@ -32,7 +32,7 @@ public class DiscoveryResource {
             log.info("discovery returning " + address + " for app " + app);
             return uni.item(address);
         } else {
-            return uni.failure(new RuntimeException("could not found address for app " + app));
+            return uni.failure(new RuntimeException("could not find address for app " + app));
         }
     }
 
