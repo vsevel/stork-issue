@@ -27,7 +27,7 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
     DiscoveryClient refreshClient;
 
     public MyServiceDiscovery(MyServiceDiscoveryProviderConfiguration config) {
-        super("600S");
+        super("10S");
         URI baseUri = URI.create(config.getDiscoveryUrl());
         this.config = config;
         initialClient = RestClientBuilder.newBuilder().readTimeout(10, TimeUnit.SECONDS)
