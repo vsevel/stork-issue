@@ -9,6 +9,7 @@ import io.smallrye.stork.spi.StorkInfrastructure;
 
 @ServiceDiscoveryType("my")
 @ServiceDiscoveryAttribute(name = "app", description = "app name", required = true)
+@ServiceDiscoveryAttribute(name = "discovery-url", description = "Discovery server URL", required = true)
 public class MyServiceDiscoveryProvider implements ServiceDiscoveryProvider<MyServiceDiscoveryProviderConfiguration> {
 
     @Override
