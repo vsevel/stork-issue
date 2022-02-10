@@ -20,7 +20,7 @@ public class DiscoveryResource {
     static Map<String, String> addresses = new HashMap<>();
 
     static {
-        addresses.put("HELLO", "localhost:8080");
+        addresses.put("HELLO", "localhost:8080,localhost:8090");
     }
 
     @GET

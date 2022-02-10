@@ -22,7 +22,7 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
     MyServiceDiscoveryProviderConfiguration config;
 
     public MyServiceDiscovery(MyServiceDiscoveryProviderConfiguration config) {
-        super("5S");
+        super("600S");
         this.config = config;
     }
 
