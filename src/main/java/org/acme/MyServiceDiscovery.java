@@ -8,11 +8,13 @@ import io.smallrye.stork.api.ServiceInstance;
 import io.smallrye.stork.impl.CachingServiceDiscovery;
 import io.smallrye.stork.impl.DefaultServiceInstance;
 import io.smallrye.stork.utils.ServiceInstanceIds;
+import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.jboss.logging.Logger;
 
-import java.time.Duration;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MyServiceDiscovery extends CachingServiceDiscovery {
@@ -21,21 +23,26 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
 
     MyServiceDiscoveryProviderConfiguration config;
 
+    DiscoveryClient initialClient;
+    DiscoveryClient refreshClient;
+
     public MyServiceDiscovery(MyServiceDiscoveryProviderConfiguration config) {
         super("600S");
+        URI baseUri = URI.create(config.getDiscoveryUrl());
         this.config = config;
+        initialClient = RestClientBuilder.newBuilder().readTimeout(10, TimeUnit.SECONDS)
+                .baseUri(baseUri).build(DiscoveryClient.class);
+        refreshClient = RestClientBuilder.newBuilder().readTimeout(100, TimeUnit.MILLISECONDS)
+                .baseUri(baseUri).build(DiscoveryClient.class);
     }
 
     @Override
     public Uni<List<ServiceInstance>> fetchNewServiceInstances(List<ServiceInstance> previousInstances) {
-        DiscoveryClient discoveryClient = Arc.container().instance(DiscoveryClientProvider.class).get().getClient();
-        long timeout = previousInstances.isEmpty() ? 10000L : 100L;
-        String addresses = discoveryClient.discovery(config.getApp()).await().atMost(Duration.ofMillis(timeout));
-        UniCreate uni = Uni.createFrom();
-        try {
-            return uni.item(map(addresses));
-        } catch (TimeoutException e) {
-            return uni.failure(e);
+        String appName = config.getApp();
+        if (previousInstances.isEmpty()) {
+            return initialClient.discovery(appName).map(this::map);
+        } else {
+            return refreshClient.discovery(appName).map(this::map);
         }
     }
 
