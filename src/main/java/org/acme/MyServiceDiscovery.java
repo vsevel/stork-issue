@@ -1,9 +1,7 @@
 package org.acme;
 
 import io.quarkus.arc.Arc;
-import io.smallrye.mutiny.TimeoutException;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.groups.UniCreate;
 import io.smallrye.stork.api.ServiceInstance;
 import io.smallrye.stork.impl.CachingServiceDiscovery;
 import io.smallrye.stork.impl.DefaultServiceInstance;
@@ -14,6 +12,8 @@ import org.jboss.logging.Logger;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -26,8 +26,10 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
     DiscoveryClient initialClient;
     DiscoveryClient refreshClient;
 
+    Map<String, Long> ids = new ConcurrentHashMap<>();
+
     public MyServiceDiscovery(MyServiceDiscoveryProviderConfiguration config) {
-        super("600S");
+        super("5S");
         URI baseUri = URI.create(config.getDiscoveryUrl());
         this.config = config;
         initialClient = RestClientBuilder.newBuilder().readTimeout(10, TimeUnit.SECONDS)
@@ -51,10 +53,17 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
     }
 
     private ServiceInstance createInstance(String hostPort) {
+
         String[] split = hostPort.split(":");
         String host = split[0];
         int port = Integer.parseInt(split[1]);
-        return new DefaultServiceInstance(ServiceInstanceIds.next(), host, port, false);
+
+        if (!ids.containsKey(hostPort)) {
+            ids.putIfAbsent(hostPort, ServiceInstanceIds.next());
+        }
+        long id = ids.get(hostPort);
+
+        return new DefaultServiceInstance(id, host, port, false);
     }
 
     // @Override
