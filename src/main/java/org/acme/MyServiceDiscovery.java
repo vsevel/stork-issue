@@ -1,6 +1,5 @@
 package org.acme;
 
-import io.quarkus.arc.Arc;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.stork.api.ServiceInstance;
 import io.smallrye.stork.impl.CachingServiceDiscovery;
@@ -30,22 +29,21 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
 
     public MyServiceDiscovery(MyServiceDiscoveryProviderConfiguration config) {
         super("5S");
-        URI baseUri = URI.create(config.getDiscoveryUrl());
         this.config = config;
-        initialClient = RestClientBuilder.newBuilder().readTimeout(10, TimeUnit.SECONDS)
-                .baseUri(baseUri).build(DiscoveryClient.class);
-        refreshClient = RestClientBuilder.newBuilder().readTimeout(100, TimeUnit.MILLISECONDS)
-                .baseUri(baseUri).build(DiscoveryClient.class);
+        initialClient = createDiscoveryClient(10, TimeUnit.SECONDS);
+        refreshClient = createDiscoveryClient(100, TimeUnit.MILLISECONDS);
+    }
+
+    DiscoveryClient createDiscoveryClient(long value, TimeUnit unit) {
+        URI baseUri = URI.create(config.getDiscoveryUrl());
+        return RestClientBuilder.newBuilder().readTimeout(value, unit).baseUri(baseUri).build(DiscoveryClient.class);
     }
 
     @Override
     public Uni<List<ServiceInstance>> fetchNewServiceInstances(List<ServiceInstance> previousInstances) {
         String appName = config.getApp();
-        if (previousInstances.isEmpty()) {
-            return initialClient.discovery(appName).map(this::map);
-        } else {
-            return refreshClient.discovery(appName).map(this::map);
-        }
+        DiscoveryClient discoveryService = previousInstances.isEmpty() ? initialClient : refreshClient;
+        return discoveryService.discovery(appName).map(this::map);
     }
 
     private List<ServiceInstance> map(String list) {
@@ -64,14 +62,6 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
         long id = ids.get(hostPort);
 
         return new DefaultServiceInstance(id, host, port, false);
-    }
-
-    // @Override
-    public Uni<List<ServiceInstance>> __fetchNewServiceInstances(List<ServiceInstance> previousInstances) {
-        DiscoveryClient discoveryClient = Arc.container().instance(DiscoveryClientProvider.class).get().getClient();
-        long timeout = previousInstances.isEmpty() ? 10000L : 100L;
-        // how do I set the timeout??
-        return discoveryClient.discovery(config.getApp()).onItem().transform(this::map);
     }
 
     // @Override
