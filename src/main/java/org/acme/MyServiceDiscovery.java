@@ -22,16 +22,14 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
 
     MyServiceDiscoveryProviderConfiguration config;
 
-    DiscoveryClient initialClient;
-    DiscoveryClient refreshClient;
+    private volatile DiscoveryClient initialClient = null;
+    private volatile DiscoveryClient refreshClient = null;
 
     Map<String, Long> ids = new ConcurrentHashMap<>();
 
     public MyServiceDiscovery(MyServiceDiscoveryProviderConfiguration config) {
         super("5S");
         this.config = config;
-        initialClient = createDiscoveryClient(10, TimeUnit.SECONDS);
-        refreshClient = createDiscoveryClient(100, TimeUnit.MILLISECONDS);
     }
 
     DiscoveryClient createDiscoveryClient(long value, TimeUnit unit) {
@@ -42,6 +40,10 @@ public class MyServiceDiscovery extends CachingServiceDiscovery {
     @Override
     public Uni<List<ServiceInstance>> fetchNewServiceInstances(List<ServiceInstance> previousInstances) {
         String appName = config.getApp();
+        if(initialClient == null) {
+            initialClient = createDiscoveryClient(10, TimeUnit.SECONDS);
+            refreshClient = createDiscoveryClient(100, TimeUnit.MILLISECONDS);
+        }
         DiscoveryClient discoveryService = previousInstances.isEmpty() ? initialClient : refreshClient;
         return discoveryService.discovery(appName).map(this::map);
     }
