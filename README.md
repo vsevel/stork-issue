@@ -1,6 +1,6 @@
 # stork-demo Project
 
 ```
-mvn clean install -am -f my-ext/pom.xml
-mvn clean install
+mvn clean install -f my-ext/pom.xml
+mvn clean install -f app/pom.xml
 ```
