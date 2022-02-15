@@ -1,17 +1,25 @@
 package org.acme;
 
+import io.smallrye.stork.Stork;
 import org.acme.test.DiscoveryParams;
+import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 @Path("/hello")
 public class HelloResource {
+
+
 
     @Inject
     @RestClient
@@ -24,6 +32,17 @@ public class HelloResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
         return "Hello RESTEasy Reactive";
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String programmatic(@PathParam("country") String country) {
+        Map<String, String> params = new HashMap<>();
+        params.put("stork.service.discovery.clock-" + country,"my-disc");
+        params.put("stork.service.discovery.clock-usa.country",country);
+        Stork.getInstance().defineServiceIfAbsent(params);
+        Clock clock = RestClientBuilder.newBuilder().baseUri(URI.create("stork://clock-"+country)).build(Clock.class);
+        return "" + clock.currentTime();
     }
 
     @GET
