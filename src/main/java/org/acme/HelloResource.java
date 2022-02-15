@@ -20,7 +20,6 @@ import java.util.Map;
 public class HelloResource {
 
 
-
     @Inject
     @RestClient
     HelloClient hello;
@@ -38,10 +37,10 @@ public class HelloResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String programmatic(@PathParam("country") String country) {
         Map<String, String> params = new HashMap<>();
-        params.put("stork.service.discovery.clock-" + country,"my-disc");
-        params.put("stork.service.discovery.clock-usa.country",country);
+        params.put("stork.service.discovery.clock-" + country, "my-disc");
+        params.put("stork.service.discovery.clock-usa.country", country);
         Stork.getInstance().defineServiceIfAbsent(params);
-        Clock clock = RestClientBuilder.newBuilder().baseUri(URI.create("stork://clock-"+country)).build(Clock.class);
+        Clock clock = RestClientBuilder.newBuilder().baseUri(URI.create("stork://clock-" + country)).build(Clock.class);
         return "" + clock.currentTime();
     }
 
